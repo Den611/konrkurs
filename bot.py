@@ -13,8 +13,8 @@ from cachetools import TTLCache
 from typing import Any, Awaitable, Callable, Dict
 
 # Налаштування конфігурації: Токени для Telegram та Gemini API
-TELEGRAM_BOT_TOKEN = "8580426946:AAGLsxImSa-oayIVtahgW6gqAUM5hiZeC-Y"
-GEMINI_API_KEY = "AIzaSyAAgvf3S7_bDhvPJBa8xgb5uTOnOR9VzwE"
+TELEGRAM_BOT_TOKEN = "твій_токен"
+GEMINI_API_KEY = "твій_ключ"
 
 # Ініціалізація бота та диспетчера
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
