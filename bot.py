@@ -12,8 +12,9 @@ from google.genai import types as genai_types
 from cachetools import TTLCache
 from typing import Any, Awaitable, Callable, Dict
 
-TELEGRAM_BOT_TOKEN = "ваш_токен"
-GEMINI_API_KEY = "ваш_апі_ключ"
+# Налаштування конфігурації: Токени для Telegram та Gemini API
+TELEGRAM_BOT_TOKEN = "8580426946:AAGLsxImSa-oayIVtahgW6gqAUM5hiZeC-Y"
+GEMINI_API_KEY = "AIzaSyAAgvf3S7_bDhvPJBa8xgb5uTOnOR9VzwE"
 
 # Ініціалізація бота та диспетчера
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
@@ -517,6 +518,8 @@ async def cmd_practice(message: types.Message, state: FSMContext):
 
 
 # Вибір мови для практики та генерація списку слів
+# Замініть цим функцію practice_choose_lang у bot.py
+
 @dp.message(PracticeWord.waiting_for_language)
 async def practice_choose_lang(message: types.Message, state: FSMContext):
     update_last_active(message.from_user.id)
@@ -540,7 +543,14 @@ async def practice_choose_lang(message: types.Message, state: FSMContext):
         await state.clear()
         return
 
+    # --- ЗМІНА ЛОГІКИ ТУТ ---
+    # 1. Спочатку перемішуємо, щоб слова з однаковим рейтингом йшли у різному порядку
     random.shuffle(practice_list)
+
+    # 2. Тепер сортуємо за кількістю використань (usage_count - це 4-й елемент, індекс 3)
+    # Слова з 0 повторень будуть першими, з 10 - останніми.
+    practice_list.sort(key=lambda x: x[3])
+    # ------------------------
 
     level = get_user_level(message.from_user.id)
     practice_count = min(len(practice_list), 5 + level)
@@ -627,7 +637,6 @@ async def cmd_stats(message: types.Message):
 # Слово дня з ШІ
 @dp.message(Command("word_of_day"))
 async def cmd_word_of_day(message: types.Message, state: FSMContext):
-    # Вибір мови для генерації
     keyboard = [[types.KeyboardButton(text=l)] for l in SUPPORTED_LANGUAGES]
     keyboard.append([types.KeyboardButton(text="/exit")])
     lang_kb = types.ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True, one_time_keyboard=True)
@@ -699,7 +708,6 @@ async def process_word_of_day_lang(message: types.Message, state: FSMContext):
         )
 
     except Exception as e:
-        print(f"AI Error: {e}")
         await message.answer("⚠️ Не вдалося згенерувати слово. Спробуйте пізніше.", reply_markup=main_kb)
         await state.clear()
 
