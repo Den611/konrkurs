@@ -14,7 +14,6 @@ def fix_db():
     try:
         cursor.execute("ALTER TABLE user_words ADD COLUMN language TEXT")
     except sqlite3.OperationalError:
-        # Колонка вже існує, нічого робити не потрібно
         pass
     conn.commit()
     conn.close()
@@ -26,10 +25,8 @@ class AdminApp(tk.Tk):
         self.title("Адмін-панель: Перегляд бази даних")
         self.geometry("1000x600")
 
-        # --- Секція 1: Таблиця користувачів ---
         tk.Label(self, text="Список користувачів").pack()
 
-        # Створення таблиці з колонками
         self.users_tree = ttk.Treeview(self, columns=("user_id", "username", "start_date", "last_active"),
                                        show="headings")
 
@@ -41,11 +38,9 @@ class AdminApp(tk.Tk):
         self.users_tree.pack(fill=tk.X)
         self.users_tree.bind("<<TreeviewSelect>>", self.on_user_select)
 
-        # --- Секція 2: Інформація про вибраного користувача ---
         self.selected_label = tk.Label(self, text="Вибраний користувач: Немає", font=("Arial", 12, "bold"))
         self.selected_label.pack(pady=5)
 
-        # --- Секція 3: Таблиця слів користувача ---
         tk.Label(self, text="Словник користувача").pack()
 
         self.words_tree = ttk.Treeview(self, columns=("word", "translation", "language"), show="headings")
@@ -55,16 +50,14 @@ class AdminApp(tk.Tk):
 
         self.words_tree.pack(fill=tk.BOTH, expand=True)
 
-        # Змінні для зберігання стану сортування та вибору
+        # Зберігання стану сортування та вибору
         self.selected_user_id = None
         self.sort_column = None
         self.sort_reverse = False
 
-        # Запуск циклічного оновлення таблиці
         self.update_users_table()
 
     def update_users_table(self):
-        # Очищення таблиці
         for row in self.users_tree.get_children():
             self.users_tree.delete(row)
 
@@ -144,11 +137,9 @@ class AdminApp(tk.Tk):
 
     def sort_by_column(self, col, reverse):
         data = [(self.users_tree.set(k, col), k) for k in self.users_tree.get_children('')]
-
-        # Обробка числових колонок
+        
         if col == "user_id":
             data = [(int(v), k) for v, k in data]
-        # Обробка дат
         elif col in ("start_date", "last_active"):
             def parse_dt(v):
                 try:
