@@ -262,7 +262,7 @@ def get_ai_explanation(content, language_of_word):
     return clean_text
 
 
-# Обробник команди /start: Реєстрація та привітання
+# Обробник команди /start 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
     add_user(message.from_user.id, message.from_user.username)
@@ -281,7 +281,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await message.answer(welcome_text, reply_markup=main_kb)
 
 
-# Обробник команди /exit: Вихід з будь-якого стану FSM
+# Обробник команди /exit
 @dp.message(Command("exit"))
 async def cmd_exit(message: types.Message, state: FSMContext):
     update_last_active(message.from_user.id)
@@ -328,7 +328,6 @@ async def process_word(message: types.Message, state: FSMContext):
 
 
 # Обробка вибору мови та збереження слова
-# 1. Показуємо автопереклад і даємо вибір
 @dp.message(AddWord.waiting_for_language)
 async def process_language(message: types.Message, state: FSMContext):
     update_last_active(message.from_user.id)
@@ -347,7 +346,6 @@ async def process_language(message: types.Message, state: FSMContext):
     data = await state.get_data()
     word = data.get("word")
 
-    # Автопереклад
     try:
         translator = GoogleTranslator(source='auto', target="uk")
         auto_translation = translator.translate(word)
@@ -356,14 +354,13 @@ async def process_language(message: types.Message, state: FSMContext):
 
     await state.update_data(auto_translation=auto_translation)
 
-    # Клавіатура: Зберегти або Вийти (користувач може ввести текст вручну)
+
     keyboard = [
         [types.KeyboardButton(text=f"Зберегти: {auto_translation}")],
         [types.KeyboardButton(text="/exit")]
     ]
     trans_kb = types.ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True, one_time_keyboard=True)
 
-    # Переходимо до нового стану - перевірки перекладу
     await state.set_state(AddWord.waiting_for_translation)
     await message.answer(
         f"🔍 Автопереклад: **{auto_translation}**\n\n"
@@ -517,8 +514,6 @@ async def cmd_practice(message: types.Message, state: FSMContext):
 
 
 # Вибір мови для практики та генерація списку слів
-# Замініть цим функцію practice_choose_lang у bot.py
-
 @dp.message(PracticeWord.waiting_for_language)
 async def practice_choose_lang(message: types.Message, state: FSMContext):
     update_last_active(message.from_user.id)
@@ -542,14 +537,9 @@ async def practice_choose_lang(message: types.Message, state: FSMContext):
         await state.clear()
         return
 
-    # --- ЗМІНА ЛОГІКИ ТУТ ---
-    # 1. Спочатку перемішуємо, щоб слова з однаковим рейтингом йшли у різному порядку
     random.shuffle(practice_list)
 
-    # 2. Тепер сортуємо за кількістю використань (usage_count - це 4-й елемент, індекс 3)
-    # Слова з 0 повторень будуть першими, з 10 - останніми.
     practice_list.sort(key=lambda x: x[3])
-    # ------------------------
 
     level = get_user_level(message.from_user.id)
     practice_count = min(len(practice_list), 5 + level)
